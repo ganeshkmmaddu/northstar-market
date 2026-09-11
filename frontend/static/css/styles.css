@@ -587,13 +587,15 @@ label {
   margin-top: 18px;
 }
 
-.admin-product-list {
+.admin-product-list,
+.admin-orders-list {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.admin-product-card {
+.admin-product-card,
+.order-card {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -601,6 +603,25 @@ label {
   border-radius: 16px;
   padding: 10px;
   background: #fff;
+}
+
+.order-card {
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.order-card-main {
+  flex: 1;
+}
+
+.order-card h4,
+.order-card p {
+  margin: 0;
+}
+
+.order-card p {
+  color: var(--muted);
+  margin-top: 6px;
 }
 
 .admin-product-card img {

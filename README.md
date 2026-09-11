@@ -1,16 +1,15 @@
-# Retail Store Sample App
+# Northstar Market
 
-A complete retail storefront inspired by the AWS retail sample app, rebuilt from scratch as a standalone Python + FastAPI project.
+Northstar Market is a full-stack retail storefront designed as a polished, cloud-ready commerce sample. It combines a FastAPI backend, SQLite persistence, and a lightweight browser UI for product browsing, cart management, checkout, and inventory administration.
 
-## Features
+## Highlights
 
-- Product catalog with search and category filtering
-- Shopping cart in the browser
-- Checkout flow with customer details and order creation
-- Order listing dashboard
-- Admin page for adding, editing, and deleting products
-- SQLite persistence for products and orders
-- Ready-to-run FastAPI backend and simple HTML/CSS/JS frontend
+- Product catalog with search and category filters
+- Interactive shopping cart and checkout workflow
+- Order creation and recent-order tracking
+- Admin dashboard for creating, editing, and deleting products
+- SQLite-backed persistence for products, categories, and orders
+- Simple deployment-friendly architecture for local or cloud-hosted environments
 
 ## Tech stack
 
@@ -19,6 +18,7 @@ A complete retail storefront inspired by the AWS retail sample app, rebuilt from
 - SQLite
 - Jinja2 templates
 - Vanilla JavaScript frontend
+- Pytest for API validation
 
 ## Quick start
 
@@ -27,23 +27,23 @@ A complete retail storefront inspired by the AWS retail sample app, rebuilt from
    ```bash
    pip install -r requirements.txt
    ```
-3. Run the server:
+3. Start the app:
    ```bash
-   uvicorn app.main:app --reload
+   python -m uvicorn app.main:app --reload
    ```
 4. Open http://localhost:8000 in the browser.
 
-## Admin page
+## Admin interface
 
-Open http://localhost:8000/admin to manage products.
+Open http://localhost:8000/admin to manage inventory and review recent orders.
 
 ## Project structure
 
-- `app/` - FastAPI application logic
-- `frontend/` - templates and frontend assets
-- `data/` - SQLite database files
-- `tests/` - API tests
+- `app/` - FastAPI application logic and database layer
+- `frontend/` - storefront and admin templates plus static assets
+- `data/` - SQLite database storage
+- `tests/` - automated route and API checks
 
 ## Notes
 
-This application is designed as a self-contained sample storefront and is intentionally lightweight so it can run locally without a large frontend build pipeline.
+This project is intentionally lightweight and easy to run locally. It is structured to be a strong foundation for a retail commerce demo and is ready to extend toward a cloud deployment pipeline when needed.

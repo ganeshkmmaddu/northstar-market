@@ -266,6 +266,7 @@ const initAdminPage = async () => {
   const form = document.getElementById("product-form");
   const categorySelect = document.getElementById("product-category");
   const productList = document.getElementById("admin-product-list");
+  const ordersList = document.getElementById("admin-orders-list");
   const productIdInput = document.getElementById("product-id");
 
   if (!form || !categorySelect || !productList) {
@@ -276,6 +277,32 @@ const initAdminPage = async () => {
     const categories = await fetchJson("/api/categories");
     categorySelect.innerHTML = categories
       .map((category) => `<option value="${category.id}">${category.name}</option>`)
+      .join("");
+  };
+
+  const renderAdminOrders = async () => {
+    if (!ordersList) return;
+    const orders = await fetchJson("/api/orders");
+    if (!orders.length) {
+      ordersList.innerHTML = '<div class="empty-state">No orders yet.</div>';
+      return;
+    }
+
+    ordersList.innerHTML = orders
+      .slice(0, 6)
+      .map((order) => {
+        const itemSummary = order.items?.map((item) => `${item.product_name} x${item.quantity}`).join(', ') || 'No items';
+        return `
+          <div class="order-card">
+            <div class="order-card-main">
+              <h4>Order #${order.id}</h4>
+              <p>${order.customer_name} · ${order.email}</p>
+              <p>${itemSummary}</p>
+            </div>
+            <strong>${formatCurrency(order.total_amount)}</strong>
+          </div>
+        `;
+      })
       .join("");
   };
 
@@ -325,6 +352,7 @@ const initAdminPage = async () => {
         if (!window.confirm("Delete this product?")) return;
         await fetchJson(`/api/admin/products/${button.dataset.deleteId}`, { method: "DELETE" });
         await renderAdminProducts();
+        await renderAdminOrders();
       });
     });
   };
@@ -354,6 +382,7 @@ const initAdminPage = async () => {
     form.reset();
     productIdInput.value = "";
     await renderAdminProducts();
+    await renderAdminOrders();
   });
 
   document.getElementById("reset-form").addEventListener("click", () => {
@@ -363,6 +392,7 @@ const initAdminPage = async () => {
 
   await loadCategoryOptions();
   await renderAdminProducts();
+  await renderAdminOrders();
 };
 
 const bindHomePage = () => {
