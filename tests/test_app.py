@@ -101,6 +101,36 @@ def test_order_history_page_loads():
     assert 'Order history' in response.text
 
 
+def test_product_reviews_and_loyalty_flow():
+    order_response = client.post('/api/orders/checkout', json={
+        'customer_name': 'Loyalty User',
+        'email': 'loyalty@example.com',
+        'address': '789 Reward Ave',
+        'city': 'Denver',
+        'payment_method': 'Card',
+        'items': [{'product_id': 3, 'quantity': 1}],
+    })
+    assert order_response.status_code == 200
+
+    review_response = client.post('/api/products/3/reviews', json={
+        'customer_name': 'Loyalty User',
+        'rating': 5,
+        'comment': 'Excellent quality and fast shipping!',
+    })
+    assert review_response.status_code == 200
+    payload = review_response.json()
+    assert payload['rating'] == 5
+    assert payload['customer_name'] == 'Loyalty User'
+
+    reviews = client.get('/api/products/3/reviews')
+    assert reviews.status_code == 200
+    assert any(item['comment'] == 'Excellent quality and fast shipping!' for item in reviews.json())
+
+    loyalty = client.get('/api/loyalty?email=loyalty@example.com')
+    assert loyalty.status_code == 200
+    assert loyalty.json()['points'] > 0
+
+
 def test_admin_order_status_update_flow():
     checkout_payload = {
         'customer_name': 'Status Update User',

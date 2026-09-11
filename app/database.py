@@ -89,6 +89,28 @@ def ensure_database():
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS product_reviews (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                customer_name TEXT NOT NULL,
+                rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+                comment TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(product_id) REFERENCES products(id)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS loyalty_accounts (
+                email TEXT PRIMARY KEY,
+                points INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
 
         order_columns = [
             row[1] for row in conn.execute("PRAGMA table_info(orders)").fetchall()
@@ -169,6 +191,80 @@ def get_product_by_id(product_id: int):
             (product_id,),
         ).fetchone()
         return dict(row) if row else None
+
+
+def get_product_reviews(product_id: int):
+    ensure_database()
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT *
+            FROM product_reviews
+            WHERE product_id = ?
+            ORDER BY created_at DESC
+            """,
+            (product_id,),
+        ).fetchall()
+        return [dict(row) for row in rows]
+
+
+def create_product_review(product_id: int, review_data: dict):
+    ensure_database()
+    rating = int(review_data.get("rating", 0))
+    if rating < 1 or rating > 5:
+        raise ValueError("Rating must be between 1 and 5.")
+    customer_name = (review_data.get("customer_name") or "Customer").strip() or "Customer"
+    comment = (review_data.get("comment") or "").strip()
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO product_reviews (product_id, customer_name, rating, comment)
+            VALUES (?, ?, ?, ?)
+            """,
+            (product_id, customer_name, rating, comment),
+        )
+        review_id = cursor.lastrowid
+        review = conn.execute("SELECT * FROM product_reviews WHERE id = ?", (review_id,)).fetchone()
+        return dict(review)
+
+
+def get_customer_loyalty(email: str | None):
+    ensure_database()
+    if not email:
+        return {"email": "", "points": 0}
+    normalized = email.strip().lower()
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT email, points FROM loyalty_accounts WHERE email = ?",
+            (normalized,),
+        ).fetchone()
+        if row:
+            return {"email": row["email"], "points": row["points"]}
+        return {"email": normalized, "points": 0}
+
+
+def award_loyalty_points(email: str, points: int):
+    ensure_database()
+    normalized = (email or "").strip().lower()
+    if not normalized:
+        return {"email": "", "points": 0}
+    with get_connection() as conn:
+        existing = conn.execute(
+            "SELECT points FROM loyalty_accounts WHERE email = ?",
+            (normalized,),
+        ).fetchone()
+        current_points = int(existing["points"]) if existing else 0
+        total_points = current_points + int(points)
+        conn.execute(
+            """
+            INSERT INTO loyalty_accounts (email, points, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(email) DO UPDATE SET points = excluded.points, updated_at = CURRENT_TIMESTAMP
+            """,
+            (normalized, total_points),
+        )
+        return {"email": normalized, "points": total_points}
 
 
 def create_product(product_data: dict):
@@ -292,6 +388,24 @@ def create_order(order_data: dict):
             conn.execute(
                 "UPDATE products SET stock = stock - ? WHERE id = ?",
                 (quantity, product["id"]),
+            )
+
+        customer_email = (order_data.get("email") or "").strip().lower()
+        if customer_email:
+            reward_points = max(1, int(round(total_amount * 2)))
+            existing = conn.execute(
+                "SELECT points FROM loyalty_accounts WHERE email = ?",
+                (customer_email,),
+            ).fetchone()
+            current_points = int(existing["points"]) if existing else 0
+            total_points = current_points + reward_points
+            conn.execute(
+                """
+                INSERT INTO loyalty_accounts (email, points, updated_at)
+                VALUES (?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(email) DO UPDATE SET points = excluded.points, updated_at = CURRENT_TIMESTAMP
+                """,
+                (customer_email, total_points),
             )
 
         order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()

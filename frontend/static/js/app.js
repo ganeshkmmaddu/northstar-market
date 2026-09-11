@@ -483,6 +483,61 @@ const bindHomePage = () => {
   }
 };
 
+const initProductReviews = async () => {
+  const reviewForm = document.getElementById("review-form");
+  const reviewList = document.getElementById("review-list");
+  const reviewSummary = document.getElementById("review-summary");
+  if (!reviewForm || !reviewList || !reviewSummary) return;
+
+  const productId = Number(reviewForm.dataset.productId);
+
+  const loadReviews = async () => {
+    const reviews = await fetchJson(`/api/products/${productId}/reviews`);
+    if (!reviews.length) {
+      reviewList.innerHTML = '<div class="empty-state">No reviews yet. Be the first to share your thoughts.</div>';
+      reviewSummary.textContent = '0 reviews';
+      return;
+    }
+
+    const average = reviews.reduce((sum, review) => sum + Number(review.rating), 0) / reviews.length;
+    reviewSummary.textContent = `${reviews.length} review${reviews.length === 1 ? '' : 's'} · ${average.toFixed(1)} average rating`;
+    reviewList.innerHTML = reviews
+      .map(
+        (review) => `
+          <div class="review-item">
+            <div class="review-header-line">
+              <strong>${review.customer_name}</strong>
+              <span>⭐ ${review.rating}/5</span>
+            </div>
+            <div class="review-date">${review.created_at}</div>
+            <p>${review.comment || 'No comment provided.'}</p>
+          </div>
+        `,
+      )
+      .join("");
+  };
+
+  reviewForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const formData = new FormData(reviewForm);
+    const payload = {
+      customer_name: formData.get("customer_name"),
+      rating: Number(formData.get("rating")),
+      comment: formData.get("comment") || "",
+    };
+
+    await fetchJson(`/api/products/${productId}/reviews`, {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+
+    reviewForm.reset();
+    await loadReviews();
+  });
+
+  await loadReviews();
+};
+
 const initOrderHistoryPage = () => {
   const form = document.getElementById("orders-form");
   const results = document.getElementById("orders-results");
@@ -496,13 +551,23 @@ const initOrderHistoryPage = () => {
       return;
     }
 
-    const orders = await fetchJson(`/api/orders/history?email=${encodeURIComponent(email)}`);
+    const [orders, loyalty] = await Promise.all([
+      fetchJson(`/api/orders/history?email=${encodeURIComponent(email)}`),
+      fetchJson(`/api/loyalty?email=${encodeURIComponent(email)}`),
+    ]);
+
+    const loyaltyMarkup = `
+      <div class="loyalty-banner">
+        <strong>Loyalty points:</strong> ${loyalty.points ?? 0}
+      </div>
+    `;
+
     if (!orders.length) {
-      results.innerHTML = '<div class="empty-state">No orders found for this email.</div>';
+      results.innerHTML = `${loyaltyMarkup}<div class="empty-state">No orders found for this email.</div>`;
       return;
     }
 
-    results.innerHTML = orders
+    results.innerHTML = `${loyaltyMarkup}${orders
       .map(
         (order) => `
           <div class="order-history-item">
@@ -515,7 +580,7 @@ const initOrderHistoryPage = () => {
           </div>
         `,
       )
-      .join("");
+      .join("")}`;
   });
 };
 
@@ -531,6 +596,7 @@ const init = async () => {
     const response = await fetchJson(`/api/products/${id}`);
     state.products = [response];
     renderCart();
+    await initProductReviews();
   }
 
   if (document.getElementById("product-form")) {

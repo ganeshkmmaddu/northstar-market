@@ -43,6 +43,38 @@
           </div>
         </div>
       </div>
+
+      <section class="product-review-panel">
+        <div class="review-header">
+          <h2>Customer reviews</h2>
+          <div class="review-summary" id="review-summary">Loading reviews...</div>
+        </div>
+        <div class="review-layout">
+          <div class="review-list" id="review-list"></div>
+          <form id="review-form" class="review-form" data-product-id="{{ product.id }}">
+            <h3>Leave a review</h3>
+            <label>
+              Your name
+              <input name="customer_name" type="text" required placeholder="Jane Doe" />
+            </label>
+            <label>
+              Rating
+              <select name="rating" required>
+                <option value="5">5 - Excellent</option>
+                <option value="4">4 - Good</option>
+                <option value="3">3 - Average</option>
+                <option value="2">2 - Fair</option>
+                <option value="1">1 - Poor</option>
+              </select>
+            </label>
+            <label>
+              Comment
+              <textarea name="comment" rows="4" placeholder="Tell other shoppers what you thought..."></textarea>
+            </label>
+            <button class="primary-button wide" type="submit">Submit review</button>
+          </form>
+        </div>
+      </section>
     </main>
 
     <aside class="cart-panel" id="cart-panel" aria-hidden="true">

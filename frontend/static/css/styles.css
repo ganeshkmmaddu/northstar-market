@@ -806,6 +806,100 @@ label {
   text-decoration: none;
 }
 
+.product-review-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: 0 12px 30px rgba(15, 18, 24, 0.04);
+  margin-top: 28px;
+  padding: 24px;
+}
+
+.review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.review-header h2 {
+  margin: 0;
+}
+
+.review-summary {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 18px;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.review-item {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px 18px;
+}
+
+.review-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-date {
+  color: var(--muted);
+  margin: 8px 0;
+  font-size: 0.82rem;
+}
+
+.review-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.review-form h3 {
+  margin: 0;
+}
+
+.review-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.loyalty-banner {
+  background: linear-gradient(135deg, rgba(247, 178, 103, 0.16), rgba(29, 78, 216, 0.08));
+  border: 1px solid rgba(29, 78, 216, 0.08);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
 .orders-page {
   padding: 40px 0 80px;
 }

@@ -14,13 +14,16 @@ from app.config import ADMIN_PASSWORD, ADMIN_USERNAME, APP_ENV, APP_NAME, SESSIO
 from app.database import (
     create_order,
     create_product,
+    create_product_review,
     delete_product,
     ensure_database,
     get_categories,
+    get_customer_loyalty,
     get_dashboard_stats,
     get_order_by_id,
     get_orders,
     get_product_by_id,
+    get_product_reviews,
     get_products,
     update_order_status,
     update_product,
@@ -158,6 +161,29 @@ def get_product(product_id: int):
     if not product:
         raise HTTPException(status_code=404, detail="Product not found.")
     return product
+
+
+@app.get("/api/products/{product_id}/reviews")
+def list_product_reviews(product_id: int):
+    if not get_product_by_id(product_id):
+        raise HTTPException(status_code=404, detail="Product not found.")
+    return get_product_reviews(product_id)
+
+
+@app.post("/api/products/{product_id}/reviews")
+def create_review(product_id: int, payload: dict):
+    if not get_product_by_id(product_id):
+        raise HTTPException(status_code=404, detail="Product not found.")
+    try:
+        review = create_product_review(product_id, payload)
+        return review
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/loyalty")
+def loyalty_points(email: str | None = None):
+    return get_customer_loyalty(email)
 
 
 @app.post("/api/orders/checkout")
