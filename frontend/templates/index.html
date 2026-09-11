@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Northstar Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <span>Northstar Market</span>
+        </div>
+        <nav class="main-nav">
+          <a href="#">Home</a>
+          <a href="#">New Arrivals</a>
+          <a href="#">Best Sellers</a>
+          <a href="#">Support</a>
+        </nav>
+        <div class="nav-actions">
+          <button class="ghost-button" id="admin-link" type="button">Admin</button>
+          <button class="cart-button" type="button" id="cart-toggle">
+            Cart <span id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Fresh picks for your modern life</p>
+          <h1>Shop smarter with curated essentials.</h1>
+          <p>
+            Discover everyday favorites, premium tech, and home upgrades built for a better routine.
+          </p>
+          <div class="hero-actions">
+            <button class="primary-button" type="button" id="hero-shop">Shop now</button>
+            <button class="secondary-button" type="button" id="hero-admin">Manage products</button>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="floating-card badge-one">Free shipping over $80</div>
+          <div class="floating-card badge-two">4.8 average rating</div>
+        </div>
+      </section>
+
+      <section class="catalog-controls">
+        <div class="category-row" id="category-row"></div>
+        <div class="searchbar">
+          <input id="product-search" type="search" placeholder="Search products..." />
+        </div>
+      </section>
+
+      <section class="catalog">
+        <div id="product-grid" class="product-grid"></div>
+      </section>
+    </main>
+
+    <aside class="cart-panel" id="cart-panel" aria-hidden="true">
+      <div class="cart-header">
+        <h2>Your cart</h2>
+        <button type="button" id="close-cart" class="close-btn">✕</button>
+      </div>
+      <div id="cart-items" class="cart-items"></div>
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong id="subtotal-value">$0.00</strong>
+        </div>
+        <button type="button" class="primary-button wide" id="checkout-button">Proceed to checkout</button>
+      </div>
+    </aside>
+
+    <div class="checkout-modal hidden" id="checkout-modal">
+      <div class="checkout-card">
+        <div class="checkout-header">
+          <h3>Checkout</h3>
+          <button class="close-btn" id="close-checkout" type="button">✕</button>
+        </div>
+        <form id="checkout-form">
+          <div class="form-grid">
+            <label>
+              Full name
+              <input name="customer_name" type="text" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" required />
+            </label>
+            <label class="full-width">
+              Street address
+              <input name="address" type="text" required />
+            </label>
+            <label>
+              City
+              <input name="city" type="text" placeholder="San Jose" />
+            </label>
+            <label>
+              Payment method
+              <select name="payment_method">
+                <option>Card</option>
+                <option>PayPal</option>
+                <option>Cash on delivery</option>
+              </select>
+            </label>
+          </div>
+          <div class="order-total">
+            <span>Total</span>
+            <strong id="checkout-total">$0.00</strong>
+          </div>
+          <button class="primary-button wide" type="submit">Place order</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
