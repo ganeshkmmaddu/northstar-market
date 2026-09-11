@@ -492,6 +492,27 @@ def get_dashboard_stats():
         order_count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
         revenue = conn.execute("SELECT COALESCE(SUM(total_amount), 0) FROM orders").fetchone()[0]
         low_stock = conn.execute("SELECT COUNT(*) FROM products WHERE stock < 10").fetchone()[0]
+        low_stock_products = conn.execute(
+            """
+            SELECT p.id, p.name, p.stock, p.price
+            FROM products p
+            WHERE p.stock < 10
+            ORDER BY p.stock ASC, p.name ASC
+            """
+        ).fetchall()
+        top_product = conn.execute(
+            """
+            SELECT p.name, SUM(oi.quantity) AS units_sold
+            FROM order_items oi
+            JOIN products p ON p.id = oi.product_id
+            GROUP BY p.id, p.name
+            ORDER BY units_sold DESC, p.name ASC
+            LIMIT 1
+            """
+        ).fetchone()
+        average_order_value = round(float(revenue or 0) / order_count, 2) if order_count else 0.0
+        inventory_health = "Healthy" if low_stock == 0 else "Watch list"
+        projected_sell_through = round((sum(row["stock"] for row in low_stock_products) if low_stock_products else 0) / max(product_count, 1), 2)
 
         return {
             "product_count": product_count,
@@ -499,4 +520,9 @@ def get_dashboard_stats():
             "order_count": order_count,
             "revenue": round(float(revenue or 0), 2),
             "low_stock_alerts": low_stock,
+            "average_order_value": average_order_value,
+            "inventory_health": inventory_health,
+            "projected_sell_through": projected_sell_through,
+            "top_product": {"name": top_product["name"], "units_sold": top_product["units_sold"]} if top_product else {"name": "No sales yet", "units_sold": 0},
+            "low_stock_products": [dict(row) for row in low_stock_products],
         }

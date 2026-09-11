@@ -55,6 +55,8 @@ def test_stats_endpoint():
     assert payload['product_count'] > 0
     assert payload['category_count'] > 0
     assert payload['order_count'] >= 0
+    assert 'average_order_value' in payload
+    assert 'low_stock_products' in payload
 
 
 def test_admin_login_flow():

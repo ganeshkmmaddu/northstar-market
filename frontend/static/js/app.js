@@ -294,6 +294,57 @@ const initAdminPage = async () => {
       .join("");
   };
 
+  const renderAnalytics = async () => {
+    const statsGrid = document.getElementById("stats-grid");
+    const lowStockList = document.getElementById("low-stock-list");
+    if (!statsGrid || !lowStockList) return;
+
+    const stats = await fetchJson("/api/stats");
+    const cards = [
+      { label: "Revenue", value: formatCurrency(stats.revenue) },
+      { label: "Orders", value: stats.order_count },
+      { label: "Avg order", value: formatCurrency(stats.average_order_value) },
+      { label: "Low stock", value: stats.low_stock_alerts },
+    ];
+
+    statsGrid.innerHTML = cards
+      .map(
+        (card) => `
+          <div class="stat-card">
+            <span>${card.label}</span>
+            <strong>${card.value}</strong>
+          </div>
+        `,
+      )
+      .join("");
+
+    const topProductName = stats.top_product?.name || "No sales yet";
+    const inventorySummary = `Top product: ${topProductName} · ${stats.inventory_health}`;
+    const forecastBadge = document.createElement("div");
+    forecastBadge.className = "forecast-badge";
+    forecastBadge.textContent = inventorySummary;
+    statsGrid.appendChild(forecastBadge);
+
+    if (!stats.low_stock_products || !stats.low_stock_products.length) {
+      lowStockList.innerHTML = '<div class="empty-state">No low-stock items. Inventory looks healthy.</div>';
+      return;
+    }
+
+    lowStockList.innerHTML = stats.low_stock_products
+      .map(
+        (product) => `
+          <div class="alert-item">
+            <div>
+              <strong>${product.name}</strong>
+              <div>${product.stock} units remaining</div>
+            </div>
+            <span class="danger-pill">Restock</span>
+          </div>
+        `,
+      )
+      .join("");
+  };
+
   const renderAdminOrders = async () => {
     if (!ordersList) return;
     const orders = await fetchJson("/api/orders");
@@ -426,6 +477,7 @@ const initAdminPage = async () => {
   });
 
   await loadCategoryOptions();
+  await renderAnalytics();
   await renderAdminProducts();
   await renderAdminOrders();
 };
