@@ -34,3 +34,7 @@ class CheckoutRequest(BaseModel):
         if "@" not in value or "." not in value.split("@", 1)[1]:
             raise ValueError("Invalid email address")
         return value.strip().lower()
+
+
+class OrderStatusUpdate(BaseModel):
+    fulfillment_status: str = Field(default="processing")

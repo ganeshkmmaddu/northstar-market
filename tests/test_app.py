@@ -101,6 +101,33 @@ def test_order_history_page_loads():
     assert 'Order history' in response.text
 
 
+def test_admin_order_status_update_flow():
+    checkout_payload = {
+        'customer_name': 'Status Update User',
+        'email': 'status@example.com',
+        'address': '456 Status Lane',
+        'city': 'Austin',
+        'payment_method': 'Card',
+        'items': [{'product_id': 2, 'quantity': 1}],
+    }
+    order_response = client.post('/api/orders/checkout', json=checkout_payload)
+    assert order_response.status_code == 200
+    order_id = order_response.json()['id']
+
+    admin_client = TestClient(app)
+    login = admin_client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=False)
+    assert login.status_code == 303
+
+    update = admin_client.patch(f'/api/admin/orders/{order_id}/status', json={'fulfillment_status': 'shipped'})
+    assert update.status_code == 200
+    payload = update.json()
+    assert payload['fulfillment_status'] == 'shipped'
+
+    lookup = client.get(f'/api/orders/{order_id}')
+    assert lookup.status_code == 200
+    assert lookup.json()['fulfillment_status'] == 'shipped'
+
+
 def test_order_confirmation_page_loads_after_checkout():
     checkout_payload = {
         'customer_name': 'Order Confirmation User',

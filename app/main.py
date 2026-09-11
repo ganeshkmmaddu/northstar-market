@@ -22,9 +22,10 @@ from app.database import (
     get_orders,
     get_product_by_id,
     get_products,
+    update_order_status,
     update_product,
 )
-from app.schemas import CheckoutRequest, ProductInput
+from app.schemas import CheckoutRequest, OrderStatusUpdate, ProductInput
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -211,6 +212,15 @@ def admin_update_product(request: Request, product_id: int, product: ProductInpu
     updated = update_product(product_id, product.model_dump())
     if not updated:
         raise HTTPException(status_code=404, detail="Product not found.")
+    return updated
+
+
+@app.patch("/api/admin/orders/{order_id}/status")
+def admin_update_order_status(request: Request, order_id: int, payload: OrderStatusUpdate):
+    _require_admin(request)
+    updated = update_order_status(order_id, payload.fulfillment_status)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Order not found.")
     return updated
 
 

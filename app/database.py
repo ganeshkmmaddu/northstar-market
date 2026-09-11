@@ -99,6 +99,10 @@ def ensure_database():
             conn.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'paid'")
         if "card_last4" not in order_columns:
             conn.execute("ALTER TABLE orders ADD COLUMN card_last4 TEXT")
+        if "fulfillment_status" not in order_columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN fulfillment_status TEXT DEFAULT 'processing'")
+        if "tracking_number" not in order_columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN tracking_number TEXT")
 
         if conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0] == 0:
             conn.executemany(
@@ -236,6 +240,7 @@ def create_order(order_data: dict):
         card_last4 = card_last4[-4:]
     payment_status = "paid" if payment_method.lower() not in {"cash on delivery", "cod"} else "pending"
     order_status = "confirmed" if payment_status == "paid" else "pending"
+    fulfillment_status = "processing"
 
     with get_connection() as conn:
         for item in items:
@@ -251,8 +256,8 @@ def create_order(order_data: dict):
 
         order_cursor = conn.execute(
             """
-            INSERT INTO orders (customer_name, email, address, city, payment_method, total_amount, status, payment_status, card_last4)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (customer_name, email, address, city, payment_method, total_amount, status, payment_status, card_last4, fulfillment_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 order_data["customer_name"],
@@ -264,6 +269,7 @@ def create_order(order_data: dict):
                 order_status,
                 payment_status,
                 card_last4 or None,
+                fulfillment_status,
             ),
         )
         order_id = order_cursor.lastrowid
@@ -343,6 +349,25 @@ def get_orders():
             payload["items"] = [dict(item) for item in items]
             results.append(payload)
         return results
+
+
+def update_order_status(order_id: int, fulfillment_status: str):
+    ensure_database()
+    allowed = {"processing", "packed", "shipped", "delivered"}
+    value = (fulfillment_status or "processing").strip().lower()
+    if value not in allowed:
+        raise ValueError("Invalid fulfillment status.")
+
+    with get_connection() as conn:
+        cursor = conn.execute(
+            "UPDATE orders SET fulfillment_status = ? WHERE id = ?",
+            (value, order_id),
+        )
+        if cursor.rowcount == 0:
+            return None
+        conn.commit()
+        updated = get_order_by_id(order_id)
+        return updated
 
 
 def get_dashboard_stats():

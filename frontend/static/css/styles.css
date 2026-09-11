@@ -656,6 +656,53 @@ label {
   margin-top: 6px;
 }
 
+.order-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.38rem 0.7rem;
+  font-size: 0.73rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.status-pill.processing {
+  background: rgba(29, 78, 216, 0.1);
+  color: var(--primary);
+}
+
+.status-pill.packed {
+  background: rgba(247, 178, 103, 0.18);
+  color: #8f5a00;
+}
+
+.status-pill.shipped {
+  background: rgba(82, 111, 255, 0.14);
+  color: #2347c7;
+}
+
+.status-pill.delivered {
+  background: rgba(29, 155, 101, 0.13);
+  color: var(--success);
+}
+
+.status-select {
+  padding: 0.5rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+
 .admin-product-card img {
   width: 80px;
   height: 80px;

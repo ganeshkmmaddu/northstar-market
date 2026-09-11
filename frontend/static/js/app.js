@@ -306,18 +306,39 @@ const initAdminPage = async () => {
       .slice(0, 6)
       .map((order) => {
         const itemSummary = order.items?.map((item) => `${item.product_name} x${item.quantity}`).join(', ') || 'No items';
+        const statusOptions = ['processing', 'packed', 'shipped', 'delivered']
+          .map((status) => `<option value="${status}" ${order.fulfillment_status === status ? 'selected' : ''}>${status}</option>`)
+          .join('');
         return `
           <div class="order-card">
             <div class="order-card-main">
               <h4>Order #${order.id}</h4>
               <p>${order.customer_name} · ${order.email}</p>
               <p>${itemSummary}</p>
+              <div class="order-status-row">
+                <span class="status-pill ${order.fulfillment_status || 'processing'}">${order.fulfillment_status || 'processing'}</span>
+                <select class="status-select" data-order-id="${order.id}">
+                  ${statusOptions}
+                </select>
+              </div>
             </div>
             <strong>${formatCurrency(order.total_amount)}</strong>
           </div>
         `;
       })
       .join("");
+
+    ordersList.querySelectorAll('.status-select').forEach((select) => {
+      select.addEventListener('change', async (event) => {
+        const orderId = Number(event.target.dataset.orderId);
+        const fulfillmentStatus = event.target.value;
+        await fetchJson(`/api/admin/orders/${orderId}/status`, {
+          method: 'PATCH',
+          body: JSON.stringify({ fulfillment_status: fulfillmentStatus }),
+        });
+        await renderAdminOrders();
+      });
+    });
   };
 
   const renderAdminProducts = async () => {
