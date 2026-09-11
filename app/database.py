@@ -1,7 +1,8 @@
 import sqlite3
-from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent.parent / "data" / "retail_store.db"
+from app.config import DATABASE_PATH
+
+DB_PATH = DATABASE_PATH
 
 DEFAULT_CATEGORIES = [
     (1, "Electronics", "Smart devices and everyday tech"),
@@ -291,3 +292,20 @@ def get_orders():
             payload["items"] = [dict(item) for item in items]
             results.append(payload)
         return results
+
+
+def get_dashboard_stats():
+    with get_connection() as conn:
+        product_count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
+        category_count = conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0]
+        order_count = conn.execute("SELECT COUNT(*) FROM orders").fetchone()[0]
+        revenue = conn.execute("SELECT COALESCE(SUM(total_amount), 0) FROM orders").fetchone()[0]
+        low_stock = conn.execute("SELECT COUNT(*) FROM products WHERE stock < 10").fetchone()[0]
+
+        return {
+            "product_count": product_count,
+            "category_count": category_count,
+            "order_count": order_count,
+            "revenue": round(float(revenue or 0), 2),
+            "low_stock_alerts": low_stock,
+        }

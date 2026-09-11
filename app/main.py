@@ -6,12 +6,14 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.config import APP_ENV, APP_NAME
 from app.database import (
     create_order,
     create_product,
     delete_product,
     ensure_database,
     get_categories,
+    get_dashboard_stats,
     get_orders,
     get_product_by_id,
     get_products,
@@ -29,9 +31,19 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Retail Store", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title=APP_NAME, version="1.0.0", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR / "static")), name="static")
 templates = Jinja2Templates(directory=str(FRONTEND_DIR / "templates"))
+
+
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok",
+        "app": APP_NAME,
+        "environment": APP_ENV,
+        "database": "sqlite",
+    }
 
 
 @app.get("/")
@@ -73,6 +85,11 @@ def checkout(payload: CheckoutRequest):
 @app.get("/api/orders")
 def list_orders():
     return get_orders()
+
+
+@app.get("/api/stats")
+def dashboard_stats():
+    return get_dashboard_stats()
 
 
 @app.post("/api/admin/products")

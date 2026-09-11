@@ -38,3 +38,20 @@ def test_checkout_requires_items():
     }
     response = client.post('/api/orders/checkout', json=bad_request)
     assert response.status_code == 400
+
+
+def test_health_endpoint():
+    response = client.get('/health')
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['status'] == 'ok'
+    assert payload['app'] == 'Northstar Market'
+
+
+def test_stats_endpoint():
+    response = client.get('/api/stats')
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload['product_count'] > 0
+    assert payload['category_count'] > 0
+    assert payload['order_count'] >= 0
