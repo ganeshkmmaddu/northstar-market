@@ -99,3 +99,25 @@ def test_order_history_page_loads():
     response = client.get('/orders')
     assert response.status_code == 200
     assert 'Order history' in response.text
+
+
+def test_order_confirmation_page_loads_after_checkout():
+    checkout_payload = {
+        'customer_name': 'Order Confirmation User',
+        'email': 'confirm@example.com',
+        'address': '123 Confirmation Ave',
+        'city': 'Seattle',
+        'payment_method': 'Card',
+        'items': [{'product_id': 1, 'quantity': 1}],
+    }
+    order_response = client.post('/api/orders/checkout', json=checkout_payload)
+    assert order_response.status_code == 200
+    order_id = order_response.json()['id']
+
+    confirmation_page = client.get(f'/order/confirmation/{order_id}')
+    assert confirmation_page.status_code == 200
+    assert 'Thanks, Order Confirmation User!' in confirmation_page.text
+
+    order_api = client.get(f'/api/orders/{order_id}')
+    assert order_api.status_code == 200
+    assert order_api.json()['customer_name'] == 'Order Confirmation User'

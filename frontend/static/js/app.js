@@ -265,12 +265,12 @@ const submitCheckout = async (event) => {
       body: JSON.stringify(payload),
     });
 
-    alert(`Order #${result.id} placed successfully!`);
     state.cart = [];
     saveCart();
     renderCart();
     closeCheckoutModal();
     checkoutForm.reset();
+    window.location.assign(`/order/confirmation/${result.id}`);
   } catch (error) {
     alert(error.message);
   }

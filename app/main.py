@@ -18,6 +18,7 @@ from app.database import (
     ensure_database,
     get_categories,
     get_dashboard_stats,
+    get_order_by_id,
     get_orders,
     get_product_by_id,
     get_products,
@@ -101,6 +102,14 @@ async def order_history_page(request: Request):
     return templates.TemplateResponse(request, "orders.html", {"orders": []})
 
 
+@app.get("/order/confirmation/{order_id}")
+async def order_confirmation_page(request: Request, order_id: int):
+    order = get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found.")
+    return templates.TemplateResponse(request, "confirmation.html", {"order": order})
+
+
 @app.get("/admin/login")
 async def admin_login(request: Request):
     admin_session = request.cookies.get("admin_session")
@@ -153,7 +162,10 @@ def get_product(product_id: int):
 @app.post("/api/orders/checkout")
 def checkout(payload: CheckoutRequest):
     try:
-        return create_order(payload.model_dump())
+        normalized = payload.model_dump()
+        if normalized.get("card_number"):
+            normalized["card_last4"] = normalized["card_number"][-4:]
+        return create_order(normalized)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -171,6 +183,14 @@ def order_history(email: str | None = None):
     return [
         order for order in get_orders() if (order.get("email") or "").strip().lower() == normalized_email
     ]
+
+
+@app.get("/api/orders/{order_id}")
+def fetch_order(order_id: int):
+    order = get_order_by_id(order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found.")
+    return order
 
 
 @app.get("/api/stats")

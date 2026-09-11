@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ProductInput(BaseModel):
@@ -23,4 +23,14 @@ class CheckoutRequest(BaseModel):
     address: str
     city: str = ""
     payment_method: str = "Card"
+    card_number: str | None = None
+    card_holder: str | None = None
+    card_last4: str | None = None
     items: list[CartItem]
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, value: str) -> str:
+        if "@" not in value or "." not in value.split("@", 1)[1]:
+            raise ValueError("Invalid email address")
+        return value.strip().lower()

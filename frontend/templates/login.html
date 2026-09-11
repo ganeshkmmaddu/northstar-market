@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Northstar Market Admin Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body class="admin-body">
+    <header class="topbar admin-topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <span>Northstar Admin</span>
+        </div>
+        <div class="nav-actions">
+          <a href="/" class="ghost-button anchor-button">Storefront</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container auth-layout">
+      <section class="admin-panel auth-panel">
+        <h2>Admin login</h2>
+        <form method="post" action="/admin/login">
+          <div class="form-grid">
+            <label>
+              Username
+              <input name="username" type="text" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" required />
+            </label>
+          </div>
+
+          {% if error %}
+            <p class="auth-error">{{ error }}</p>
+          {% endif %}
+
+          <div class="admin-actions">
+            <button class="primary-button" type="submit">Sign in</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

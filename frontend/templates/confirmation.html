@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order confirmation | Northstar Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <span>Northstar Market</span>
+        </div>
+        <div class="nav-actions">
+          <a href="/" class="ghost-button anchor-button">Keep shopping</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container orders-page">
+      <section class="confirmation-shell panel-block">
+        <div class="confirmation-head">
+          <span class="status-badge {{ 'success' if order['status'] == 'confirmed' else 'pending' }}">
+            {{ 'Order confirmed' if order['status'] == 'confirmed' else 'Order pending' }}
+          </span>
+          <h1>Thanks, {{ order['customer_name'] }}!</h1>
+          <p>Your order #{{ order['id'] }} has been placed successfully and is now being processed.</p>
+        </div>
+
+        <div class="confirmation-grid">
+          <div class="confirmation-card">
+            <h2>Order summary</h2>
+            <dl class="confirmation-list">
+              <div>
+                <dt>Order number</dt>
+                <dd>#{{ order['id'] }}</dd>
+              </div>
+              <div>
+                <dt>Email</dt>
+                <dd>{{ order['email'] }}</dd>
+              </div>
+              <div>
+                <dt>Payment method</dt>
+                <dd>{{ order['payment_method'] }}</dd>
+              </div>
+              <div>
+                <dt>Payment status</dt>
+                <dd>{{ order['payment_status'] }}</dd>
+              </div>
+              <div>
+                <dt>Order status</dt>
+                <dd>{{ order['status'] }}</dd>
+              </div>
+              <div>
+                <dt>Placed on</dt>
+                <dd>{{ order['created_at'] }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="confirmation-card">
+            <h2>Delivery details</h2>
+            <dl class="confirmation-list">
+              <div>
+                <dt>Customer</dt>
+                <dd>{{ order['customer_name'] }}</dd>
+              </div>
+              <div>
+                <dt>Address</dt>
+                <dd>{{ order['address'] }}</dd>
+              </div>
+              <div>
+                <dt>City</dt>
+                <dd>{{ order['city'] or 'Not provided' }}</dd>
+              </div>
+              <div>
+                <dt>Total</dt>
+                <dd>${{ '%.2f' % order['total_amount'] }}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div class="confirmation-items">
+          <h2>Items in this order</h2>
+          {% for item in order['items'] %}
+          <div class="confirmation-item">
+            <div>
+              <strong>{{ item.product_name }}</strong>
+              <div>Quantity: {{ item.quantity }}</div>
+            </div>
+            <strong>${{ '%.2f' % item.total_price }}</strong>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="confirmation-actions">
+          <a href="/" class="primary-button anchor-button">Continue shopping</a>
+          <a href="/orders" class="ghost-button anchor-button">View order history</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

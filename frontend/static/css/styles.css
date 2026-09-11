@@ -810,6 +810,123 @@ label {
   font-size: 1.1rem;
 }
 
+.confirmation-shell {
+  padding: 32px;
+}
+
+.confirmation-head {
+  margin-bottom: 24px;
+}
+
+.confirmation-head h1 {
+  margin: 14px 0 10px;
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  letter-spacing: -0.06em;
+}
+
+.confirmation-head p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-badge.success {
+  background: rgba(29, 155, 101, 0.12);
+  color: var(--success);
+}
+
+.status-badge.pending {
+  background: rgba(247, 178, 103, 0.18);
+  color: #a15600;
+}
+
+.confirmation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.confirmation-card,
+.confirmation-items {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 22px;
+}
+
+.confirmation-card h2,
+.confirmation-items h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.confirmation-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+}
+
+.confirmation-list div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.confirmation-list dt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+}
+
+.confirmation-list dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.confirmation-items {
+  margin-bottom: 24px;
+}
+
+.confirmation-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.confirmation-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.confirmation-item div {
+  color: var(--muted);
+}
+
+.confirmation-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 @media (max-width: 960px) {
   .hero,
   .admin-layout,

@@ -68,6 +68,9 @@ def ensure_database():
                 city TEXT,
                 payment_method TEXT NOT NULL,
                 total_amount REAL NOT NULL,
+                status TEXT DEFAULT 'confirmed',
+                payment_status TEXT DEFAULT 'paid',
+                card_last4 TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
             """
@@ -87,6 +90,16 @@ def ensure_database():
             """
         )
 
+        order_columns = [
+            row[1] for row in conn.execute("PRAGMA table_info(orders)").fetchall()
+        ]
+        if "status" not in order_columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'confirmed'")
+        if "payment_status" not in order_columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN payment_status TEXT DEFAULT 'paid'")
+        if "card_last4" not in order_columns:
+            conn.execute("ALTER TABLE orders ADD COLUMN card_last4 TEXT")
+
         if conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0] == 0:
             conn.executemany(
                 "INSERT INTO categories (id, name, description) VALUES (?, ?, ?)",
@@ -104,12 +117,14 @@ def ensure_database():
 
 
 def get_categories():
+    ensure_database()
     with get_connection() as conn:
         rows = conn.execute("SELECT * FROM categories ORDER BY id").fetchall()
         return [dict(row) for row in rows]
 
 
 def get_products(category: str | None = None, query: str | None = None):
+    ensure_database()
     base_sql = """
         SELECT p.*, c.name AS category_name
         FROM products p
@@ -138,6 +153,7 @@ def get_products(category: str | None = None, query: str | None = None):
 
 
 def get_product_by_id(product_id: int):
+    ensure_database()
     with get_connection() as conn:
         row = conn.execute(
             """
@@ -152,6 +168,7 @@ def get_product_by_id(product_id: int):
 
 
 def create_product(product_data: dict):
+    ensure_database()
     with get_connection() as conn:
         cursor = conn.execute(
             """
@@ -174,6 +191,7 @@ def create_product(product_data: dict):
 
 
 def update_product(product_id: int, product_data: dict):
+    ensure_database()
     with get_connection() as conn:
         rowcount = conn.execute(
             """
@@ -199,17 +217,26 @@ def update_product(product_id: int, product_data: dict):
 
 
 def delete_product(product_id: int):
+    ensure_database()
     with get_connection() as conn:
         cursor = conn.execute("DELETE FROM products WHERE id = ?", (product_id,))
         return cursor.rowcount > 0
 
 
 def create_order(order_data: dict):
+    ensure_database()
     items = order_data.get("items", [])
     if not items:
         raise ValueError("Checkout requires at least one item.")
 
     total_amount = 0.0
+    payment_method = order_data.get("payment_method", "Card")
+    card_last4 = (order_data.get("card_last4") or "")
+    if card_last4 and len(card_last4) > 4:
+        card_last4 = card_last4[-4:]
+    payment_status = "paid" if payment_method.lower() not in {"cash on delivery", "cod"} else "pending"
+    order_status = "confirmed" if payment_status == "paid" else "pending"
+
     with get_connection() as conn:
         for item in items:
             product = conn.execute(
@@ -224,16 +251,19 @@ def create_order(order_data: dict):
 
         order_cursor = conn.execute(
             """
-            INSERT INTO orders (customer_name, email, address, city, payment_method, total_amount)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (customer_name, email, address, city, payment_method, total_amount, status, payment_status, card_last4)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 order_data["customer_name"],
                 order_data["email"],
                 order_data["address"],
                 order_data.get("city", ""),
-                order_data.get("payment_method", "Card"),
+                payment_method,
                 round(total_amount, 2),
+                order_status,
+                payment_status,
+                card_last4 or None,
             ),
         )
         order_id = order_cursor.lastrowid
@@ -274,7 +304,28 @@ def create_order(order_data: dict):
         return result
 
 
+def get_order_by_id(order_id: int):
+    ensure_database()
+    with get_connection() as conn:
+        order = conn.execute("SELECT * FROM orders WHERE id = ?", (order_id,)).fetchone()
+        if not order:
+            return None
+        items = conn.execute(
+            """
+            SELECT oi.*, p.name AS product_name, p.image_url
+            FROM order_items oi
+            JOIN products p ON p.id = oi.product_id
+            WHERE oi.order_id = ?
+            """,
+            (order_id,),
+        ).fetchall()
+        payload = dict(order)
+        payload["items"] = [dict(item) for item in items]
+        return payload
+
+
 def get_orders():
+    ensure_database()
     with get_connection() as conn:
         orders = conn.execute("SELECT * FROM orders ORDER BY created_at DESC").fetchall()
         results = []
@@ -295,6 +346,7 @@ def get_orders():
 
 
 def get_dashboard_stats():
+    ensure_database()
     with get_connection() as conn:
         product_count = conn.execute("SELECT COUNT(*) FROM products").fetchone()[0]
         category_count = conn.execute("SELECT COUNT(*) FROM categories").fetchone()[0]
