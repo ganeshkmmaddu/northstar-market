@@ -15,6 +15,7 @@ services:
       ADMIN_PASSWORD: admin123
       SESSION_SECRET_KEY: change-this-secret-in-production
       NORTHSTAR_DB_PATH: /app/data/retail_store.db
+      PORT: 8000
     volumes:
       - ./data:/app/data
     restart: unless-stopped

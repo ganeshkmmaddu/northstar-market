@@ -23,15 +23,31 @@ Northstar Market is a full-stack retail storefront designed as a polished, cloud
 ## Quick start
 
 1. Create and activate a virtual environment.
-2. Install dependencies:
+2. Copy the sample environment file and adjust any settings you want to override:
+   ```bash
+   copy .env.example .env
+   ```
+3. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. Start the app:
+4. Start the app:
    ```bash
    python -m uvicorn app.main:app --reload
    ```
-4. Open http://localhost:8000 in the browser.
+5. Open http://localhost:8000 in the browser.
+
+## Cloud-ready deployment
+
+The app is structured for cloud hosting and reads its runtime configuration from environment variables. The container startup also honors a dynamic `PORT` value, which works cleanly with platforms such as Azure App Service, Railway, Render, or container hosts.
+
+```bash
+# Example for a hosted environment
+export PORT=8080
+export APP_ENV=production
+export SESSION_SECRET_KEY=your-very-strong-secret
+python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
+```
 
 ## Admin interface
 
@@ -69,7 +85,7 @@ docker compose up --build
 
 Then open http://localhost:8000 to access the storefront.
 
-For cloud deployment, this setup is prepared to be adapted to AWS ECS, Azure Container Apps, or a simple container host. The application already exposes a health endpoint at `/health` and reads environment variables for business configuration.
+For cloud deployment, this setup is prepared for AWS ECS, Azure Container Apps, or a simple container host. The application exposes the health endpoint at `/health`, reads environment variables for configuration, and supports a `PORT` override so it can be dropped into hosted environments without code changes.
 
 ## Notes
 
