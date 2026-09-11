@@ -59,6 +59,18 @@ export ADMIN_PASSWORD=supersecurepassword
 export SESSION_SECRET_KEY=your-session-secret
 ```
 
+## Container deployment
+
+You can run the app in a containerized environment using Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+Then open http://localhost:8000 to access the storefront.
+
+For cloud deployment, this setup is prepared to be adapted to AWS ECS, Azure Container Apps, or a simple container host. The application already exposes a health endpoint at `/health` and reads environment variables for business configuration.
+
 ## Notes
 
 This project is intentionally lightweight and easy to run locally. It is structured to be a strong foundation for a retail commerce demo and is ready to extend toward a cloud deployment pipeline when needed.
