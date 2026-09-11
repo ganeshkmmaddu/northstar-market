@@ -32,6 +32,10 @@ const fetchJson = async (url, options = {}) => {
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.location.href = "/admin/login";
+      throw new Error("Unauthorized");
+    }
     const errorBody = await response.json().catch(() => ({}));
     throw new Error(errorBody.detail || "Request failed.");
   }
@@ -191,7 +195,10 @@ const renderProducts = () => {
                 <div class="price">${formatCurrency(product.price)}</div>
                 <small>⭐ ${product.rating}</small>
               </div>
-              <button class="add-to-cart" type="button" data-product-id="${product.id}">Add to cart</button>
+              <div class="product-footer-actions">
+                <button class="detail-link" type="button" data-detail-id="${product.id}">Details</button>
+                <button class="add-to-cart" type="button" data-product-id="${product.id}">Add to cart</button>
+              </div>
             </div>
           </div>
         </article>
@@ -203,6 +210,13 @@ const renderProducts = () => {
     button.addEventListener("click", () => {
       const product = state.products.find((item) => item.id === Number(button.dataset.productId));
       if (product) addToCart(product);
+    });
+  });
+
+  productGrid.querySelectorAll(".detail-link").forEach((button) => {
+    button.addEventListener("click", () => {
+      const productId = Number(button.dataset.detailId);
+      window.location.href = `/product/${productId}`;
     });
   });
 };
@@ -396,30 +410,92 @@ const initAdminPage = async () => {
 };
 
 const bindHomePage = () => {
-  cartToggle.addEventListener("click", () => {
-    if (cartPanel.classList.contains("open")) closeCart();
-    else openCart();
-  });
+  if (cartToggle) {
+    cartToggle.addEventListener("click", () => {
+      if (cartPanel.classList.contains("open")) closeCart();
+      else openCart();
+    });
+  }
 
-  document.getElementById("close-cart").addEventListener("click", closeCart);
-  document.getElementById("checkout-button").addEventListener("click", openCheckoutModal);
-  document.getElementById("close-checkout").addEventListener("click", closeCheckoutModal);
-  document.getElementById("hero-shop").addEventListener("click", () => {
-    document.querySelector(".catalog").scrollIntoView({ behavior: "smooth" });
-  });
-  document.getElementById("hero-admin").addEventListener("click", () => {
+  const closeCartButton = document.getElementById("close-cart");
+  if (closeCartButton) closeCartButton.addEventListener("click", closeCart);
+
+  const checkoutButton = document.getElementById("checkout-button");
+  if (checkoutButton) checkoutButton.addEventListener("click", openCheckoutModal);
+
+  const closeCheckoutButton = document.getElementById("close-checkout");
+  if (closeCheckoutButton) closeCheckoutButton.addEventListener("click", closeCheckoutModal);
+
+  const heroShop = document.getElementById("hero-shop");
+  if (heroShop) {
+    heroShop.addEventListener("click", () => {
+      document.querySelector(".catalog").scrollIntoView({ behavior: "smooth" });
+    });
+  }
+
+  const heroAdmin = document.getElementById("hero-admin");
+  if (heroAdmin) heroAdmin.addEventListener("click", () => {
     window.location.href = "/admin";
   });
-  document.getElementById("admin-link").addEventListener("click", () => {
+
+  const adminLink = document.getElementById("admin-link");
+  if (adminLink) adminLink.addEventListener("click", () => {
     window.location.href = "/admin";
   });
 
-  productSearch.addEventListener("input", (event) => {
-    state.searchTerm = event.target.value;
-    renderProducts();
-  });
+  if (productSearch) {
+    productSearch.addEventListener("input", (event) => {
+      state.searchTerm = event.target.value;
+      renderProducts();
+    });
+  }
 
-  checkoutForm.addEventListener("submit", submitCheckout);
+  if (checkoutForm) checkoutForm.addEventListener("submit", submitCheckout);
+
+  const detailButton = document.getElementById("product-detail-add");
+  if (detailButton) {
+    detailButton.addEventListener("click", () => {
+      const productId = Number(detailButton.dataset.productId);
+      const product = state.products.find((item) => item.id === productId);
+      if (product) addToCart(product);
+    });
+  }
+};
+
+const initOrderHistoryPage = () => {
+  const form = document.getElementById("orders-form");
+  const results = document.getElementById("orders-results");
+  if (!form || !results) return;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const email = document.getElementById("order-email").value.trim();
+    if (!email) {
+      results.innerHTML = '<div class="empty-state">Please enter an email address.</div>';
+      return;
+    }
+
+    const orders = await fetchJson(`/api/orders/history?email=${encodeURIComponent(email)}`);
+    if (!orders.length) {
+      results.innerHTML = '<div class="empty-state">No orders found for this email.</div>';
+      return;
+    }
+
+    results.innerHTML = orders
+      .map(
+        (order) => `
+          <div class="order-history-item">
+            <div>
+              <strong>Order #${order.id}</strong>
+              <div>${order.created_at}</div>
+              <div>${order.items?.map((item) => `${item.product_name} x${item.quantity}`).join(', ') || 'No line items.'}</div>
+            </div>
+            <strong>${formatCurrency(order.total_amount)}</strong>
+          </div>
+        `,
+      )
+      .join("");
+  });
 };
 
 const init = async () => {
@@ -428,8 +504,20 @@ const init = async () => {
     await loadCatalog();
   }
 
+  if (document.getElementById("product-detail-add")) {
+    bindHomePage();
+    const id = Number(document.getElementById("product-detail-add").dataset.productId);
+    const response = await fetchJson(`/api/products/${id}`);
+    state.products = [response];
+    renderCart();
+  }
+
   if (document.getElementById("product-form")) {
     await initAdminPage();
+  }
+
+  if (document.getElementById("orders-form")) {
+    initOrderHistoryPage();
   }
 };
 

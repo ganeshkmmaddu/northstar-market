@@ -81,3 +81,21 @@ def test_admin_api_requires_auth():
         'rating': 4.5,
     })
     assert response.status_code == 401
+
+
+def test_product_detail_page_loads():
+    response = client.get('/product/1')
+    assert response.status_code == 200
+    assert 'Echo Smart Speaker' in response.text
+
+
+def test_order_history_endpoint_returns_empty_for_unknown_email():
+    response = client.get('/api/orders/history?email=unknown@example.com')
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_order_history_page_loads():
+    response = client.get('/orders')
+    assert response.status_code == 200
+    assert 'Order history' in response.text

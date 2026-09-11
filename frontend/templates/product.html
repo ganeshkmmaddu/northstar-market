@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ product.name }} | Northstar Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <span>Northstar Market</span>
+        </div>
+        <div class="nav-actions">
+          <a href="/" class="ghost-button anchor-button">Back to shop</a>
+          <button class="cart-button" type="button" id="cart-toggle">
+            Cart <span id="cart-count">0</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container product-detail-page">
+      <div class="product-detail-card">
+        <img src="{{ product.image_url or 'https://placehold.co/900x750?text=Product' }}" alt="{{ product.name }}" class="product-detail-image" />
+        <div class="product-detail-content">
+          <div class="product-detail-meta">
+            <span class="product-category">{{ product.category_name }}</span>
+            <span class="stock">{{ product.stock }} in stock</span>
+          </div>
+          <h1>{{ product.name }}</h1>
+          <div class="product-detail-price">$ {{ '%.2f' % product.price }}</div>
+          <div class="rating-row">⭐ {{ product.rating }} rating</div>
+          <p class="product-detail-description">{{ product.description }}</p>
+          <div class="detail-actions">
+            <button class="primary-button" type="button" data-product-id="{{ product.id }}" id="product-detail-add">Add to cart</button>
+            <a href="/" class="secondary-button anchor-button">Continue shopping</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="cart-panel" id="cart-panel" aria-hidden="true">
+      <div class="cart-header">
+        <h2>Your cart</h2>
+        <button type="button" id="close-cart" class="close-btn">✕</button>
+      </div>
+      <div id="cart-items" class="cart-items"></div>
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <strong id="subtotal-value">$0.00</strong>
+        </div>
+        <button type="button" class="primary-button wide" id="checkout-button">Proceed to checkout</button>
+      </div>
+    </aside>
+
+    <div class="checkout-modal hidden" id="checkout-modal">
+      <div class="checkout-card">
+        <div class="checkout-header">
+          <h3>Checkout</h3>
+          <button class="close-btn" id="close-checkout" type="button">✕</button>
+        </div>
+        <form id="checkout-form">
+          <div class="form-grid">
+            <label>
+              Full name
+              <input name="customer_name" type="text" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" required />
+            </label>
+            <label class="full-width">
+              Street address
+              <input name="address" type="text" required />
+            </label>
+            <label>
+              City
+              <input name="city" type="text" placeholder="San Jose" />
+            </label>
+            <label>
+              Payment method
+              <select name="payment_method">
+                <option>Card</option>
+                <option>PayPal</option>
+                <option>Cash on delivery</option>
+              </select>
+            </label>
+          </div>
+          <div class="order-total">
+            <span>Total</span>
+            <strong id="checkout-total">$0.00</strong>
+          </div>
+          <button class="primary-button wide" type="submit">Place order</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

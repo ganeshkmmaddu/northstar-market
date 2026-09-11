@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order History | Northstar Market</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/css/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav-wrap">
+        <div class="brand">
+          <span class="brand-mark">N</span>
+          <span>Northstar Market</span>
+        </div>
+        <div class="nav-actions">
+          <a href="/" class="ghost-button anchor-button">Continue shopping</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="container orders-page">
+      <section class="orders-lookup panel-block">
+        <h1>Order history</h1>
+        <p>Enter the email address used during checkout to see your recent orders.</p>
+        <form id="orders-form" class="orders-form">
+          <input type="email" id="order-email" placeholder="you@example.com" required />
+          <button class="primary-button" type="submit">Search orders</button>
+        </form>
+      </section>
+
+      <section class="panel-block">
+        <div id="orders-results" class="orders-results"></div>
+      </section>
+    </main>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>

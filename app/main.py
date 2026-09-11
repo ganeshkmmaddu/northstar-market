@@ -88,6 +88,19 @@ async def home(request: Request):
     return templates.TemplateResponse(request, "index.html", {})
 
 
+@app.get("/product/{product_id}")
+async def product_detail(request: Request, product_id: int):
+    product = get_product_by_id(product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found.")
+    return templates.TemplateResponse(request, "product.html", {"product": product})
+
+
+@app.get("/orders")
+async def order_history_page(request: Request):
+    return templates.TemplateResponse(request, "orders.html", {"orders": []})
+
+
 @app.get("/admin/login")
 async def admin_login(request: Request):
     admin_session = request.cookies.get("admin_session")
@@ -148,6 +161,16 @@ def checkout(payload: CheckoutRequest):
 @app.get("/api/orders")
 def list_orders():
     return get_orders()
+
+
+@app.get("/api/orders/history")
+def order_history(email: str | None = None):
+    if not email:
+        return []
+    normalized_email = email.strip().lower()
+    return [
+        order for order in get_orders() if (order.get("email") or "").strip().lower() == normalized_email
+    ]
 
 
 @app.get("/api/stats")
