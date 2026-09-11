@@ -85,6 +85,26 @@ docker compose up --build
 
 Then open http://localhost:8000 to access the storefront.
 
+## AWS deployment (recommended)
+
+This project is set up for a straightforward AWS deployment using Docker and ECS Fargate. The app already exposes the `/health` endpoint, honors environment variables, and supports a `PORT` override to work cleanly in a hosted container environment.
+
+### ECS / Fargate flow
+
+1. Create an ECR repository and an ECS cluster/service for the app.
+2. Replace the placeholders in `aws/ecs-task-definition.json` with your AWS account ID, region, and IAM role ARNs.
+3. Build and push the image:
+
+```bash
+export AWS_REGION=us-east-1
+export AWS_ACCOUNT_ID=123456789012
+bash scripts/deploy-aws.sh
+```
+
+4. Register the task definition and create or update the ECS service using the task definition file in `aws/ecs-task-definition.json`.
+
+The repo also includes a reusable deployment helper at `scripts/deploy-aws.sh`.
+
 For cloud deployment, this setup is prepared for AWS ECS, Azure Container Apps, or a simple container host. The application exposes the health endpoint at `/health`, reads environment variables for configuration, and supports a `PORT` override so it can be dropped into hosted environments without code changes.
 
 ## Notes
