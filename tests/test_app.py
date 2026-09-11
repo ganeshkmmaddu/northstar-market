@@ -55,3 +55,29 @@ def test_stats_endpoint():
     assert payload['product_count'] > 0
     assert payload['category_count'] > 0
     assert payload['order_count'] >= 0
+
+
+def test_admin_login_flow():
+    login_page = client.get('/admin/login')
+    assert login_page.status_code == 200
+
+    login_response = client.post('/admin/login', data={'username': 'admin', 'password': 'admin123'}, follow_redirects=False)
+    assert login_response.status_code == 303
+    assert 'admin_session' in login_response.cookies
+
+    protected = client.get('/admin', follow_redirects=False)
+    assert protected.status_code == 200
+
+
+def test_admin_api_requires_auth():
+    unauthenticated_client = TestClient(app)
+    response = unauthenticated_client.post('/api/admin/products', json={
+        'name': 'Test unauthorized product',
+        'description': 'This should be blocked',
+        'price': 15.0,
+        'stock': 5,
+        'category_id': 1,
+        'featured': False,
+        'rating': 4.5,
+    })
+    assert response.status_code == 401

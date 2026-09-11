@@ -44,6 +44,21 @@ Open http://localhost:8000/admin to manage inventory and review recent orders.
 - `data/` - SQLite database storage
 - `tests/` - automated route and API checks
 
+## Admin credentials
+
+The default admin login is:
+
+- Username: `admin`
+- Password: `admin123`
+
+These defaults can be overridden with environment variables:
+
+```bash
+export ADMIN_USERNAME=myadmin
+export ADMIN_PASSWORD=supersecurepassword
+export SESSION_SECRET_KEY=your-session-secret
+```
+
 ## Notes
 
 This project is intentionally lightweight and easy to run locally. It is structured to be a strong foundation for a retail commerce demo and is ready to extend toward a cloud deployment pipeline when needed.

@@ -1,12 +1,16 @@
+import base64
+import hashlib
+import hmac
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query, Request
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Form, HTTPException, Query, Request
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from app.config import APP_ENV, APP_NAME
+from app.config import ADMIN_PASSWORD, ADMIN_USERNAME, APP_ENV, APP_NAME, SESSION_SECRET_KEY
 from app.database import (
     create_order,
     create_product,
@@ -23,6 +27,39 @@ from app.schemas import CheckoutRequest, ProductInput
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
+
+
+def _sign_payload(payload: str) -> str:
+    digest = hmac.new(SESSION_SECRET_KEY.encode(), payload.encode(), hashlib.sha256).digest()
+    return base64.urlsafe_b64encode(digest).decode().rstrip("=")
+
+
+def _create_session(username: str) -> str:
+    payload = f"{username}:{int(time.time())}"
+    return f"{payload}.{_sign_payload(payload)}"
+
+
+def _verify_session(session_value: str | None) -> str | None:
+    if not session_value:
+        return None
+    try:
+        payload, signature = session_value.split(".", 1)
+    except ValueError:
+        return None
+    if not hmac.compare_digest(signature, _sign_payload(payload)):
+        return None
+    username = payload.split(":", 1)[0]
+    if username == ADMIN_USERNAME:
+        return username
+    return None
+
+
+def _require_admin(request: Request):
+    session_value = request.cookies.get("admin_session")
+    username = _verify_session(session_value)
+    if username != ADMIN_USERNAME:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    return username
 
 
 @asynccontextmanager
@@ -51,8 +88,34 @@ async def home(request: Request):
     return templates.TemplateResponse(request, "index.html", {})
 
 
+@app.get("/admin/login")
+async def admin_login(request: Request):
+    admin_session = request.cookies.get("admin_session")
+    if _verify_session(admin_session) == ADMIN_USERNAME:
+        return RedirectResponse(url="/admin", status_code=303)
+    return templates.TemplateResponse(request, "login.html", {"error": None})
+
+
+@app.post("/admin/login")
+async def admin_login_submit(request: Request, username: str = Form(...), password: str = Form(...)):
+    if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
+        return templates.TemplateResponse(request, "login.html", {"error": "Invalid username or password."})
+    response = RedirectResponse(url="/admin", status_code=303)
+    response.set_cookie("admin_session", _create_session(username), httponly=True, samesite="lax")
+    return response
+
+
+@app.get("/admin/logout")
+async def admin_logout():
+    response = RedirectResponse(url="/admin/login", status_code=303)
+    response.delete_cookie("admin_session")
+    return response
+
+
 @app.get("/admin")
 async def admin(request: Request):
+    if _verify_session(request.cookies.get("admin_session")) != ADMIN_USERNAME:
+        return RedirectResponse(url="/admin/login", status_code=303)
     return templates.TemplateResponse(request, "admin.html", {})
 
 
@@ -93,13 +156,15 @@ def dashboard_stats():
 
 
 @app.post("/api/admin/products")
-def admin_create_product(product: ProductInput):
+def admin_create_product(request: Request, product: ProductInput):
+    _require_admin(request)
     created = create_product(product.model_dump())
     return created
 
 
 @app.put("/api/admin/products/{product_id}")
-def admin_update_product(product_id: int, product: ProductInput):
+def admin_update_product(request: Request, product_id: int, product: ProductInput):
+    _require_admin(request)
     updated = update_product(product_id, product.model_dump())
     if not updated:
         raise HTTPException(status_code=404, detail="Product not found.")
@@ -107,7 +172,8 @@ def admin_update_product(product_id: int, product: ProductInput):
 
 
 @app.delete("/api/admin/products/{product_id}")
-def admin_delete_product(product_id: int):
+def admin_delete_product(request: Request, product_id: int):
+    _require_admin(request)
     deleted = delete_product(product_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Product not found.")
