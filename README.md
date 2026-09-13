@@ -1,99 +1,185 @@
-# Northstar Market
+﻿# Northstar Market
 
-Northstar Market is a full-stack retail storefront designed as a polished, cloud-ready commerce sample. It combines a FastAPI backend, SQLite persistence, and a lightweight browser UI for product browsing, cart management, checkout, and inventory administration.
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.12%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.12+" />
+  <img src="https://img.shields.io/badge/FastAPI-0.115%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white" alt="SQLite" />
+  <img src="https://img.shields.io/badge/Frontend-Jinja%2BJS-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="Frontend" />
+</p>
 
-## Highlights
+<p align="center">
+  <strong>Developed and maintained by Ganesh Kumar Maddi</strong>
+</p>
 
-- Product catalog with search and category filters
-- Interactive shopping cart and checkout workflow
-- Order creation and recent-order tracking
-- Admin dashboard for creating, editing, and deleting products
-- SQLite-backed persistence for products, categories, and orders
-- Simple deployment-friendly architecture for local or cloud-hosted environments
+Northstar Market is a modern, full-stack retail storefront built with FastAPI, SQLite, and server-rendered frontend templates. It simulates a real-world commerce workflow with product browsing, cart management, checkout, admin inventory control, review management, and deployment-ready configuration for cloud hosting.
+
+## Table of contents
+
+- [Overview](#overview)
+- [Key features](#key-features)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project structure](#project-structure)
+- [Quick start](#quick-start)
+- [Admin access](#admin-access)
+- [Environment configuration](#environment-configuration)
+- [Deployment](#deployment)
+- [Testing](#testing)
+- [Ownership](#ownership)
+
+## Overview
+
+This project is designed as a polished, lightweight commerce application that can run locally for demos and scale toward a hosted deployment pipeline. It combines a Python backend, SQLite persistence, admin tooling, and a responsive storefront UI into a single, easy-to-run solution.
+
+The platform supports:
+
+- catalog browsing and product search
+- cart and checkout workflow
+- order tracking and confirmation pages
+- admin inventory management
+- product review handling
+- environment-driven configuration for cloud deployment
+
+## Key features
+
+| Feature | Description |
+| --- | --- |
+| Storefront UI | Shop landing page, product detail pages, order flow, and client-side interactions |
+| Product catalog | Search, category filtering, and product metadata with review support |
+| Cart and checkout | Checkout API with customer and payment payload handling |
+| Order tracking | Recent orders, history lookup, and confirmation pages |
+| Admin dashboard | Product create/edit/delete, order status updates, and secure admin session handling |
+| SQLite database | Persistent product, order, category, and review storage |
+| Cloud-friendly config | Port override, environment-based secrets, and container-ready startup |
+| Health checks | `/health` endpoint for hosting and deployment validation |
 
 ## Tech stack
 
-- Python 3.12
-- FastAPI
-- SQLite
-- Jinja2 templates
-- Vanilla JavaScript frontend
-- Pytest for API validation
+| Layer | Stack |
+| --- | --- |
+| Backend | Python, FastAPI, Uvicorn |
+| Database | SQLite |
+| Frontend | Jinja2 templates, vanilla JavaScript, CSS |
+| Validation | Pytest, HTTPX |
+| Deployment | Docker, Docker Compose, AWS ECS-ready packaging |
 
-## Quick start
+## Architecture
 
-1. Create and activate a virtual environment.
-2. Copy the sample environment file and adjust any settings you want to override:
-   ```bash
-   copy .env.example .env
-   ```
-3. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-4. Start the app:
-   ```bash
-   python -m uvicorn app.main:app --reload
-   ```
-5. Open http://localhost:8000 in the browser.
-
-## Cloud-ready deployment
-
-The app is structured for cloud hosting and reads its runtime configuration from environment variables. The container startup also honors a dynamic `PORT` value, which works cleanly with platforms such as Azure App Service, Railway, Render, or container hosts.
-
-```bash
-# Example for a hosted environment
-export PORT=8080
-export APP_ENV=production
-export SESSION_SECRET_KEY=your-very-strong-secret
-python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT}
+```mermaid
+flowchart LR
+    A[Customer Browser] --> B[FastAPI App]
+    B --> C[SQLite Database]
+    B --> D[Product Catalog APIs]
+    B --> E[Checkout and Order APIs]
+    B --> F[Admin Dashboard]
+    F --> G[Product + Order Management]
+    B --> H[Health + Config Layer]
+    H --> I[Hosted Environment / Docker / AWS]
 ```
-
-## Admin interface
-
-Open http://localhost:8000/admin to manage inventory and review recent orders.
 
 ## Project structure
 
-- `app/` - FastAPI application logic and database layer
-- `frontend/` - storefront and admin templates plus static assets
-- `data/` - SQLite database storage
-- `tests/` - automated route and API checks
+```text
+northstar-market/
+├── app/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   ├── main.py
+│   ├── models.py
+│   └── schemas.py
+├── frontend/
+│   ├── static/
+│   └── templates/
+├── aws/
+│   └── ecs-task-definition.json
+├── scripts/
+│   └── deploy-aws.sh
+├── tests/
+├── .env.example
+├── .dockerignore
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── README.md
+└── LICENSE
+```
 
-## Admin credentials
+## Quick start
 
-The default admin login is:
+### 1) Create a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 2) Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3) Start the application
+
+```bash
+python -m uvicorn app.main:app --reload
+```
+
+### 4) Open the app
+
+```text
+http://localhost:8000
+```
+
+## Admin access
+
+The default admin credentials are:
 
 - Username: `admin`
 - Password: `admin123`
 
-These defaults can be overridden with environment variables:
+Admin pages include:
+
+- `/admin/login`
+- `/admin`
+- inventory management workflow
+- order status updates
+
+## Environment configuration
+
+The app reads settings from environment variables and supports hosting-friendly configuration.
+
+| Variable | Purpose |
+| --- | --- |
+| `APP_ENV` | Runtime environment label |
+| `PORT` | HTTP port for hosted environments |
+| `SESSION_SECRET_KEY` | Session signing secret |
+| `ADMIN_USERNAME` | Admin username override |
+| `ADMIN_PASSWORD` | Admin password override |
+
+Example:
 
 ```bash
-export ADMIN_USERNAME=myadmin
-export ADMIN_PASSWORD=supersecurepassword
-export SESSION_SECRET_KEY=your-session-secret
+export APP_ENV=production
+export PORT=8080
+export SESSION_SECRET_KEY=your-very-strong-secret
+export ADMIN_USERNAME=admin
+export ADMIN_PASSWORD=securepassword
 ```
 
-## Container deployment
+## Deployment
 
-You can run the app in a containerized environment using Docker Compose:
+### Docker
 
 ```bash
 docker compose up --build
 ```
 
-Then open http://localhost:8000 to access the storefront.
+### AWS / container hosting
 
-## AWS deployment (recommended)
-
-This project is set up for a straightforward AWS deployment using Docker and ECS Fargate. The app already exposes the `/health` endpoint, honors environment variables, and supports a `PORT` override to work cleanly in a hosted container environment.
-
-### ECS / Fargate flow
-
-1. Create an ECR repository and an ECS cluster/service for the app.
-2. Replace the placeholders in `aws/ecs-task-definition.json` with your AWS account ID, region, and IAM role ARNs.
-3. Build and push the image:
+This project is structured to work with container deployments and has cloud-ready startup patterns.
 
 ```bash
 export AWS_REGION=us-east-1
@@ -101,12 +187,24 @@ export AWS_ACCOUNT_ID=123456789012
 bash scripts/deploy-aws.sh
 ```
 
-4. Register the task definition and create or update the ECS service using the task definition file in `aws/ecs-task-definition.json`.
+The repository includes a sample ECS task definition and deployment helper script for AWS-based deployment.
 
-The repo also includes a reusable deployment helper at `scripts/deploy-aws.sh`.
+## Testing
 
-For cloud deployment, this setup is prepared for AWS ECS, Azure Container Apps, or a simple container host. The application exposes the health endpoint at `/health`, reads environment variables for configuration, and supports a `PORT` override so it can be dropped into hosted environments without code changes.
+Run the test suite:
 
-## Notes
+```bash
+pytest -q
+```
 
-This project is intentionally lightweight and easy to run locally. It is structured to be a strong foundation for a retail commerce demo and is ready to extend toward a cloud deployment pipeline when needed.
+This project includes API and application tests to validate product, order, admin, and health-related workflows.
+
+## Ownership
+
+This repository was created and developed as a personal project by Ganesh Kumar Maddi.
+
+The project is structured as a production-style storefront demo with practical e-commerce patterns, clean deployment-friendly configuration, and a polished developer-facing presentation.
+
+## License
+
+This project is provided for educational, demonstration, and portfolio purposes. Add a formal license if you plan to distribute or commercialize it.
